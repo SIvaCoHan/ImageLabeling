@@ -5,6 +5,7 @@
       <button @click="activeTool('select') ">选择工具</button>
       <button @click="activeTool('pencil')">铅笔</button>
       <button @click="changeColor">修改颜色</button>
+      <button @click="scope.project.clear()">清空</button>
     </div>
   </div>
 </template>
@@ -72,6 +73,9 @@ export default {
       }
       tool.onMouseUp = (event) => {
         self.temp.path.add(event.point);
+        // TODO 启用简化模式，通过删除path中部分point来提高整体性能。
+        //  删除的时候会导致path略微变形，需要评估后才能使用。
+        // self.temp.path.simplify();
       }
       this.tools.pencil = tool;
     },
