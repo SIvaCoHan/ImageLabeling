@@ -62,16 +62,14 @@ function lineTool(self, scope){
       to: event.point,
       strokeColor: self.color,
     });
-    console.log(tmp);
-    // tmp.removeOn({
-    //   drag: true
-    // })
+    tmp.removeOn({
+      drag: true
+    })
   }
   self.tools.line = tool;
 }
 
 function arrowTool(self, scope){
-  // TODO Arrow 怎么画呢？
   scope.activate();
   let tool = new paper.Tool();
 
