@@ -11,6 +11,7 @@
       <button @click="tools.text.activate">文本</button>
       <button @click="tools.circle.activate">圆形</button>
       <button @click="tools.rectangle.activate">矩形</button>
+      <button @click="tools.arrow.activate">箭头</button>
     </div>
   </div>
 </template>
@@ -54,18 +55,17 @@ function textTool(self, scope){
 function lineTool(self, scope){
   scope.activate();
   let tool = new paper.Tool();
-  // 鼠标落下时创建新对象，鼠标拖动时，修改对象。
-  tool.onMouseDown = (event) => {
-    console.log('key down', event);
-    self.temp = new paper.Path.Line({
-      from: event.point,
+
+  tool.onMouseDrag = (event) => {
+    const tmp = new paper.Path.Line({
+      from: event.downPoint,
       to: event.point,
       strokeColor: self.color,
     });
-  }
-  tool.onMouseDrag = (event) => {
-    console.log('drag', event);
-    self.temp.segments[1].point = event.point;
+    console.log(tmp);
+    // tmp.removeOn({
+    //   drag: true
+    // })
   }
   self.tools.line = tool;
 }
@@ -74,6 +74,34 @@ function arrowTool(self, scope){
   // TODO Arrow 怎么画呢？
   scope.activate();
   let tool = new paper.Tool();
+
+  tool.onMouseDrag = (event) => {
+    const start = event.downPoint
+    const end = event.point
+    const tailVector = end.subtract(start)
+    if (tailVector.length < 10){
+      // 如果拖动长度不足，则不展示箭头
+      return
+    }
+    const headLine = tailVector.normalize(10)
+    const headAngle = 150;
+    const oPoint = new paper.Point(0, 0);
+
+    const arrow = new paper.Group([
+      new paper.Path([start, end]),
+      new paper.Path([
+        end.add(headLine.rotate(headAngle, oPoint)),
+        end,
+        end.add(headLine.rotate(-headAngle, oPoint))
+      ])
+    ])
+    arrow.data.name = 'arrow'
+    arrow.strokeColor = self.color
+    arrow.removeOn({
+      drag: true
+    })
+  }
+
   self.tools.arrow = tool;
 }
 
