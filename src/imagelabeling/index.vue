@@ -12,6 +12,9 @@
       <button @click="tools.circle.activate">圆形</button>
       <button @click="tools.rectangle.activate">矩形</button>
       <button @click="tools.arrow.activate">箭头</button>
+      <button @click="tools.raster.activate">图片</button>
+      <button @click="deleteSelected">删除选中</button>
+      <button @click="tools.move.activate">移动</button>
     </div>
   </div>
 </template>
@@ -145,6 +148,43 @@ function rectangleTool(self, scope){
   self.tools.rectangle = tool;
 }
 
+function rasterTool(self, scope){
+  scope.activate();
+  const tool = new paper.Tool();
+  tool.onMouseDown = (event) => {
+    // TODO 根据需要修改URL
+    // 这个URL 可以是data url吗？ 支
+    new paper.Raster({
+      source: 'http://assets.paperjs.org/images/marilyn.jpg',
+      position: event.point
+    })
+  }
+  self.tools.raster = tool
+}
+
+function moveTool(self, scope){
+  scope.activate();
+  const tool = new paper.Tool();
+  tool.onMouseDown = (event) => {
+    const test_result = scope.project.hitTest(event.point);
+    if (test_result){
+      scope.project.deselectAll();
+      test_result.item.selected = true;
+      // 是 position 不能直接和point 计算的问题
+      // test_result.item.position = new paper.Point(10, 10);
+    }
+  }
+  tool.onMouseDrag = (event) => {
+    for (const item of scope.project.selectedItems){
+      item.position = item.position.add(event.delta)
+      // 下面的写法是错误的，因为event.point 和 item.center 并不重合。这回引发图片抖动，看起来动画不流程。
+      // item.position = event.point;
+      console.log(item.position)
+    }
+  }
+  self.tools.move = tool
+}
+
 export default {
   name: "index-vue",
   data: () => ({
@@ -169,6 +209,11 @@ export default {
         this.color = 'red';
       } else {
         this.color = 'black';
+      }
+    },
+    deleteSelected(){
+      for(const item of this.scope.project.selectedItems){
+        item.remove();
       }
     },
 
@@ -225,6 +270,8 @@ export default {
       arrowTool(this, scope);
       circleTool(this, scope);
       rectangleTool(this, scope);
+      rasterTool(this, scope);
+      moveTool(this, scope);
     },
   },
   mounted() {
