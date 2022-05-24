@@ -15,6 +15,7 @@
       <button @click="tools.raster.activate">图片</button>
       <button @click="deleteSelected">删除选中</button>
       <button @click="tools.move.activate">移动</button>
+      <button @click="tools.scale.activate">缩放</button>
     </div>
   </div>
 </template>
@@ -174,6 +175,7 @@ function moveTool(self, scope){
       // test_result.item.position = new paper.Point(10, 10);
     }
   }
+
   tool.onMouseDrag = (event) => {
     for (const item of scope.project.selectedItems){
       item.position = item.position.add(event.delta)
@@ -183,6 +185,33 @@ function moveTool(self, scope){
     }
   }
   self.tools.move = tool
+}
+
+function scaleTool(self, scope){
+  scope.activate();
+  const tool = new paper.Tool();
+
+
+  tool.onMouseDown = (event) => {
+    const test_result = scope.project.hitTest(event.point);
+    if (test_result){
+      scope.project.deselectAll();
+      test_result.item.selected = true;
+    }
+  }
+  // FIXME 这里的绑定不对，应该是tool激活后绑定，tool失效后删除handler
+  scope.project.view.element.onwheel = (event) => {
+    const factor = 1 + Math.sign(event.deltaY) * -1 * Math.abs(event.deltaY / 10) / 100
+    for (const item of scope.project.selectedItems){
+      item.scale(factor);
+    }
+  }
+  tool.onMouseDrag = () => {
+    for (const item of scope.project.selectedItems){
+      item.scale(0.9);
+    }
+  }
+  self.tools.scale = tool
 }
 
 export default {
@@ -272,12 +301,14 @@ export default {
       rectangleTool(this, scope);
       rasterTool(this, scope);
       moveTool(this, scope);
+      scaleTool(this, scope);
     },
   },
   mounted() {
     // TODO 我们使用的是一个 scope 只有一个 project 的方式, 暂时没有想好我们是否要支持一个scope 是否要支持多个project
     this.scope = new paper.PaperScope();
     this.scope.setup(this.elementID);
+    this.scope.framerate=120
     this.loadTools(this.scope);
   }
 }
