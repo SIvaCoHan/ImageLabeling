@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  web-frontend:
+    image: registry.cn-beijing.aliyuncs.com/changchunroud169/ilb:0.1
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - "8888:80"
+
