@@ -16,6 +16,7 @@
       <button @click="deleteSelected">删除选中</button>
       <button @click="tools.move.activate">移动</button>
       <button @click="tools.scale.activate">缩放</button>
+      <button @click="tools.gray.activate">变灰</button>
     </div>
   </div>
 </template>
@@ -145,6 +146,7 @@ function rectangleTool(self, scope){
       to: event.point,
       strokeColor: self.color
     })
+    console.log('包含面积:', self.temp.area)
   }
   self.tools.rectangle = tool;
 }
@@ -157,10 +159,33 @@ function rasterTool(self, scope){
     // 这个URL 可以是data url吗？ 支
     new paper.Raster({
       source: 'http://assets.paperjs.org/images/marilyn.jpg',
-      position: event.point
+      position: event.point,
+      crossOrigin: "anonymous"
     })
   }
   self.tools.raster = tool
+}
+
+function rasterToGrayTool(self, scope){
+  scope.activate();
+  const tool = new paper.Tool();
+  tool.onMouseDown = (event) => {
+    const test_result = scope.project.hitTest(event.point);
+    if (test_result){
+      scope.project.deselectAll();
+      test_result.item.selected = true;
+      console.log('变灰选中', test_result.item);
+
+      if(test_result.item.className === 'Raster'){
+        test_result.item.getContext().filter = 'grayscale(50%)';
+        test_result.item.drawImage(test_result.item.canvas);
+        // test_result.item.drawImage();
+      }
+      // 是 position 不能直接和point 计算的问题
+      // test_result.item.position = new paper.Point(10, 10);
+    }
+  }
+  self.tools.gray = tool
 }
 
 function moveTool(self, scope){
@@ -283,6 +308,7 @@ export default {
       }
       tool.onMouseUp = (event) => {
         self.temp.add(event.point);
+        console.log('包含面积:', self.temp.area)
         // TODO 启用简化模式，通过删除path中部分point来提高整体性能。
         //  删除的时候会导致path略微变形，需要评估后才能使用。
         // self.temp.simplify();
@@ -300,6 +326,7 @@ export default {
       circleTool(this, scope);
       rectangleTool(this, scope);
       rasterTool(this, scope);
+      rasterToGrayTool(this, scope);
       moveTool(this, scope);
       scaleTool(this, scope);
     },
