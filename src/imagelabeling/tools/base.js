@@ -36,6 +36,7 @@ export default class Base{
         const {borderSize, borderColor } = property;
         this.borderSize = borderSize ?borderSize: this.borderSize ;
         this.borderColor = borderColor ?borderColor: this.borderColor ;
+        this.scope.project.deselectAll();
         this._tool.activate()
     }
 }
